@@ -1,5 +1,6 @@
 package com.example.myquizapp
 
+import android.content.Intent
 import android.graphics.Color
 import android.graphics.Typeface
 import android.graphics.drawable.AnimatedStateListDrawable
@@ -11,6 +12,7 @@ import android.widget.Button
 import android.widget.ImageView
 import android.widget.ProgressBar
 import android.widget.TextView
+import android.widget.Toast
 import androidx.core.content.ContextCompat
 
 class QuizQuestionsActivity : AppCompatActivity() , View.OnClickListener {
@@ -18,6 +20,8 @@ class QuizQuestionsActivity : AppCompatActivity() , View.OnClickListener {
     private var mCurrentPosition:Int= 1
     private var mQuestionList:ArrayList<Question>?= null
     private var mselectedOptionPosition: Int = 0
+    private var mUserName: String? = null
+    private  var mCorrectAnswers:Int = 0
 
     private var progressBar:ProgressBar?=null
     private var tvProgress:TextView?= null
@@ -36,6 +40,7 @@ class QuizQuestionsActivity : AppCompatActivity() , View.OnClickListener {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_quiz_questions)
 
+        mUserName = intent.getStringExtra(Constants.USER_NAME)
 
         progressBar = findViewById(R.id.progressBar)
         tvProgress = findViewById(R.id.tv_progress)
@@ -65,12 +70,14 @@ class QuizQuestionsActivity : AppCompatActivity() , View.OnClickListener {
         val question: Question = mQuestionList!![mCurrentPosition - 1]
         ivImage?.setImageResource(question.image)
         progressBar?.progress = mCurrentPosition
-        tvProgress?.text = "$mCurrentPosition / ${progressBar?.max}"
+        tvProgress?.text = "$mCurrentPosition"+ "/"+ progressBar?.max
+
         tvQuestion?.text = question.question
+        ivImage?.setImageResource(question.image)
         tvOptionOne?.text = question.optionOne
         tvOptionTwo?.text = question.optionTwo
         tvOptionThree?.text = question.optionThree
-        tvOptionFour?.text = question.optionfour
+        tvOptionFour?.text = question.optionFour
 
         tvOptionOne?.setOnClickListener(this)
         tvOptionTwo?.setOnClickListener(this)
@@ -159,11 +166,21 @@ class QuizQuestionsActivity : AppCompatActivity() , View.OnClickListener {
                        mCurrentPosition <= mQuestionList!!.size ->{
                            setQuestion()
                        }
+                       else -> {
+                           val intent = Intent(this,ResultActivity::class.java)
+                           intent.putExtra(Constants.USER_NAME,mUserName)
+                           intent.putExtra(Constants.CORRECT_ANSWERS,mCorrectAnswers)
+                           intent.putExtra(Constants.TOTAL_OUESTIONS,mQuestionList?.size)
+                           startActivity(intent)
+                           finish()
+                       }
                    }
                }else{
                    val question = mQuestionList?.get(mCurrentPosition-1)
                    if(question!!.correctAnswer != mselectedOptionPosition){
                        answerView(mselectedOptionPosition,R.drawable.wrong_option_border_bg)
+                   }else{
+                       mCorrectAnswers++
                    }
                    answerView(question.correctAnswer,R.drawable.correct_option_border_bg)
 
